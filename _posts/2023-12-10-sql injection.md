@@ -2,7 +2,7 @@
 layout: post
 title:  Sql Injection
 date: 2023-12-10 20:00:01 +0900
-categories: Web
+categories: WEB
 ---
 ## 시스템 테이블
 > `information_schema` <br>
