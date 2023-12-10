@@ -1,0 +1,333 @@
+---
+layout: post
+title:  로지스틱 회귀를 활용한 OX 이미지 판별
+categories: AI
+---
+## 1. 프로젝트 소개
+### 1) 주제 선정 이유
+2학년 겨울방학 때 `<인공지능 기초 다지기>` 코칭스터디라는 활동을 했었습니다. 5주동안 1주일에 정해진 강의를 듣고 과제를 하는 온라인 스터디였습니다. 코칭 스터디를 하면서 인공지능의 사용되는 백터, 행렬, 파이썬 기초 등을 배웠습니다. 그리고 인공지능 수학 탐구 보고서를 쓰면서 선형회귀, 경사하강법을 주제로 더 확장해서 공부해봤습니다. 이제 경사하강법을 확장해서 로지스틱 회귀라는 알고리즘을 가지고 OX 이미지 판별이 어떻게 이뤄지는지 알아보고 싶어 이 주제를 선정했습니다.
+
+### 2) 프로젝트 소개
+![](/public/img/2023-12-10/Untitled.png){: width="30%" height="30%"}
+![](/public/img/2023-12-10/Untitled%20(1).png){: width="30%" height="30%"}<br>
+이미지를 그리면 학습된 인공지능이 O, X를 판별해주는 프로젝트입니다. 이미 학습된 W, b의 값들이 새로 입력받은 이미지 데이터의 곱해지고 시그모이드 함수를 거쳐서 0.5를 넘으면 O, 0.5보다 낮으면 X로 판별합니다.
+
+## 2. 프로젝트 진행 과정
+### 1) 경사하강법을 이용한 선형회귀
+![](/public/img/2023-12-10/image.png){: width="30%" height="30%"}<br>
+(그림 1)<br>
+![](/public/img/2023-12-10/image%20(1).png){: width="30%" height="30%"}<br>
+(그림 2)<br>
+(그림 1)은 공부 시간에 따른 성적을 표로 나타낸 그림입니다. 만약 10시간 공부했을 때 성적을 예측하고 싶다면 (그림 2)처럼 가장 오차가 적은 직선을 그려 10시간 공부 시간에 대한 성적을 예측해 볼 수 있습니다. 이때 가장 오차가 적은 직선을 찾는 알고리즘이 경사하강법입니다.<br><br>
+
+하지만 오차가 가장 적은 직선을 찾기 위해서는 오차를 측정할 수 있는 함수가 있어야 합니다. 예측 직선이 이러한 1차 직선인 경우 평균 제곱 오차(MSE) 함수를 많이 사용합니다.<br><br>
+
+![](/public/img/2023-12-10/image%20(2).png){: width="30%" height="30%"}<br>
+(그림 3)<br>
+평균 제곱 오차(MSE)란 (실제값-예측값)을 제곱해서 평균을 구한 값입니다. 평균 제곱 오차를 사용하여 위에서 예측한 직선이 `y = 3x + 76`일 경우에 11이라는 오차를 구할 수 있습니다.<br><br>
+
+![](/public/img/2023-12-10/image%20(3).png){: width="30%" height="30%"}<br>
+(그림 4)<br>
+이제 직선의 기울기를 계속 변경하면서 오차를 측정해 오른쪽과 같은 기울기에 대한 오차 그래프를 그릴 수 있습니다. 그러면 그래프에서 오차가 가장 적은 지점이 미분했을 때 0이 되는 기울기 부분이라는 걸 알게 됐습니다. 총 경사하강법 과정은 다음과 같습니다.<br><br>
+
+> 1 `|` W, b를 랜덤으로 설정하여 `y=Wx+b`로 예측 직선을 만듭니다. <br>
+> 2 `|` 평균 제곱 오차를 이용하여 오차를 측정합니다.<br>
+> 3 `|` W, b를 미분합니다.<br>
+> 4 `|` `W = W - 0.001 * W`, `b = b - 0.001 * b` 으로 W, b를 업데이트 합니다. <br>
+> 5 `|` 위 과정을 반복합니다.<br>
+
+예측 직선이 1차 함수 `y=Wx+b`이기 때문에 아래와 같이 정리할 수 있습니다.<br><br>
+![](/public/img/2023-12-10/image%20(4).png){: width="30%" height="30%"}<br>
+(그림 5)<br>
+![](/public/img/2023-12-10/image%20(5).png){: width="30%" height="30%"}<br>
+(그림 6)<br>
+![](/public/img/2023-12-10/image%20(6).png){: width="30%" height="30%"}<br>
+(그림 7)<br>
+MSE로 오차함수(LOSS)로 정의하였고, LOSS를 W에 대해 편미분, b에 대해 편미분해 각각의 미분한 값을 구했습니다. 이제 이 식으로 그대로 구현하면 경사하강법을 이용한 오차가 가장 적은 직선을 찾을 수 있습니다. 위 과정을 선형회귀라고 합니다. (오차가 가장 적은 직선을 찾는 과정)
+
+### 2) 선형회귀 구현
+```python
+import numpy as np
+import matplotlib.pylab as plt
+
+x_data = np.array([2,5,8,13,10])   # 일한 시간(x)
+y_data = np.array([8,35,40,92,83]) # 성과급 (y)
+
+epochs = 1000                       # 학습 반복 횟수
+learning_rate = 0.0001              # learning_rate 설정
+W = np.random.rand(1)               # W 랜덤 설정
+b = np.random.rand(1)               # b 랜덤 설정
+
+y_pred = W*x_data+b
+
+plt.plot(x_data,y_data,'o')
+plt.plot(x_data[:],y_pred,label='{}x+{}'.format(W,b))
+plt.legend()
+plt.show()
+
+for i in range(epochs):
+    y_pred = W*x_data+b
+    loss = (1/len(x_data)) * sum((y_pred-y_data)**2)   # 오차 측정
+    dW = (2/len(x_data))*sum(x_data*(y_pred-y_data)) # W 미분
+    db = (2/len(x_data))*sum(y_pred-y_data)           # b 미분
+    W = W - learning_rate*dW                         # W 업데이트
+    b = b - learning_rate*db                         # b 업데이트
+    if i % 100 == 0:
+        print(f'Epoch: {i:5}/1000, loss: {loss:5f}, W : {W.item():.5f}, b : {b.item():.5f}')
+
+print(f'24시간 일한 성과급: {W*24+b}')
+plt.plot(x_data,y_data,'o')
+plt.plot(x_data[:],y_pred,label='{}x+{}'.format(W,b))
+plt.legend()
+plt.show()
+```
+![](/public/img/2023-12-10/Untitled%20(2).png){: width="30%" height="30%"}<br>
+(그림 9)<br>
+```
+Epoch:     0/1000, loss: 2864.617742, W : 0.85194, b : 0.58254
+Epoch:   100/1000, loss: 241.521196, W : 5.50294, b : 1.03401
+Epoch:   200/1000, loss: 104.045311, W : 6.57022, b : 1.10840
+Epoch:   300/1000, loss: 96.713417, W : 6.81747, b : 1.09662
+Epoch:   400/1000, loss: 96.196710, W : 6.87706, b : 1.06524
+Epoch:   500/1000, loss: 96.037894, W : 6.89371, b : 1.02949
+Epoch:   600/1000, loss: 95.898866, W : 6.90051, b : 0.99286
+Epoch:   700/1000, loss: 95.761916, W : 6.90505, b : 0.95613
+Epoch:   800/1000, loss: 95.626108, W : 6.90906, b : 0.91950
+Epoch:   900/1000, loss: 95.491384, W : 6.91294, b : 0.88300
+24시간 일한 성과급: [166.84863644]
+```
+![](/public/img/2023-12-10/Untitled%20(2).png){: width="30%" height="30%"}<br>
+(그림 10)<br>
+위 코드는 정리한 식을 그대로 python으로 구현한 것입니다. W, b를 랜덤으로 설정한 후 y_pred 라는 예측 직선을 만듭니다. 이제 y_data와 y_pred로 평균제곱오차(MSE)를 구현하여 loss를 측정합니다. loss를 W로 편미분, loss를 b로 편미분하여 dW, db에 저장한 후 경사하강법을 시행합니다. loss가 계속 줄어드는 것을 볼 수 있고, 학습이 완료 되었을 때, 24시간의 성과급을 167이라고 예측하는 것을 볼 수 있습니다.  (그림 9)의 랜덤으로 설정된 직선이 (그림 10)의 가장 적은 오차로 예측하는 직선이 된 것을 볼 수 있습니다.
+
+### 3) 경사하강법을 이용한 로지스틱 회귀
+![](/public/img/2023-12-10/image%20(7).png){: width="30%" height="30%"}<br>
+(그림 9)<br>
+![](/public/img/2023-12-10/image%20(8).png){: width="30%" height="30%"}<br>
+(그림 10)<br>
+경사하강법을 활용하여 오차가 가장 적은 직선을 구했습니다. 하지만 (그림 9)과 같이 공부한 시간에 대한 합격여부를 0, 1으로 나타낸 데이터에서 일차직선으로는 가장 오차가 적은 직선을 찾을 수 없습니다. 그래서 (그림 10)와 같이 S자로 개형을 바꿔서 그려 가장 오차가 적은 곡선을 찾아야 합니다. 위 과정을 로지스틱 회귀라고 합니다.<br><br>
+
+![](/public/img/2023-12-10/image%20(9).png){: width="30%" height="30%"}<br>
+(그림 11)<br>
+위와 같은 곡선을 그리기 위해 (그림 11)의 시그모이드라는 함수를 사용하여 일차직선의 개형을 바꿔줄 수 있습니다.<br><br>
+![](/public/img/2023-12-10/image%20(10).png){: width="30%" height="30%"}<br>
+(그림 12)<br>
+시그모이드 함수로 일차 직선을 곡선으로 만들고, 똑같이 경사하강법을 사용하여 오차가 가장 적은 곡선을 찾을 수 있습니다. 하지만 시그모이드 함수가 적용된 곡선은 미분했을 때 0이 되는 부분이 두 부분이 나와 오차가 가장 적은 곡선을 찾기가 힘들다고 합니다. 그래서 로지스틱 회귀에서는 (그림 12)와 같은 이진 교차 엔트로피(BCE) 오차 함수를 이용합니다. 나머지는 선형 회귀에 과정과 똑같습니다.<br><br>
+
+이제 시그모이드 함수를 적용한 일차곡선을 다음과 같이 정리해봅시다.<br><br>
+![](/public/img/2023-12-10/image%20(11).png){: width="30%" height="30%"}<br>
+(그림 13)<br>
+(그림 13)는 로지스틱 회귀에 최종 오차함수 입니다. 하지만 LOSS를 W, b에 대해 편미분하는건 많이 복잡하기 때문에 연쇄법칙을 이용하였습니다.<br><br>
+
+![](/public/img/2023-12-10/image%20(12).png){: width="30%" height="30%"}<br>
+(그림 14)<br>
+![](/public/img/2023-12-10/image%20(13).png){: width="30%" height="30%"}<br>
+(그림 15)<br>
+![](/public/img/2023-12-10/image%20(14).png){: width="30%" height="30%"}<br>
+(그림 16)<br>
+![](/public/img/2023-12-10/image%20(15).png){: width="30%" height="30%"}<br>
+(그림 17)<br>
+(그림 14), (그림 15), (그림 16)로 각각을 z, a, h로 정의했습니다. 연쇄법칙에 의해 (그림 17)과 같이 나타낼 수 있습니다.<br><br>
+
+![](/public/img/2023-12-10/image%20(16).png){: width="30%" height="30%"}<br>
+(그림 18)<br>
+![](/public/img/2023-12-10/image%20(17).png){: width="30%" height="30%"}<br>
+(그림 19)<br>
+![](/public/img/2023-12-10/image%20(18).png){: width="30%" height="30%"}<br>
+(그림 20)<br>
+각각을 미분한 결과는 (그림 18), (그림 19), (그림 20)과 같습니다. 여기서 (그림 19)의 꼴을 바꿔 훨씬 간단하게 한 식으로 만들어 줄 수 있습니다.<br><br>
+
+![](/public/img/2023-12-10/image%20(19).png){: width="30%" height="30%"}<br>
+![](/public/img/2023-12-10/image%20(20).png){: width="30%" height="30%"}<br>
+(그림 21)<br>
+(그림 19)를 꼴을 맞춰서 (그림 21)의 꼴로 간단히 만들어 주었습니다.<br><br>
+
+![](/public/img/2023-12-10/image%20(21).png){: width="30%" height="30%"}<br>
+![](/public/img/2023-12-10/image%20(22).png){: width="30%" height="30%"}<br>
+![](/public/img/2023-12-10/image%20(23).png){: width="30%" height="30%"}<br>
+(그림 22)<br>
+이제 각각 미분한 결과를 (그림 22)와 같이 합치면 맨 처음 LOSS를 W로 편미분할 수 있습니다.<br><br>
+![](/public/img/2023-12-10/svg.svg){: width="30%" height="30%"}<br>
+(그림 23)<br>
+![](/public/img/2023-12-10/svg%20(1).svg){: width="30%" height="30%"}<br>
+(그림 23)<br>
+최종적으로 W, b에 대해 편미분하면 (그림 23), (그림 24)과 같이 정리할 수 있습니다. 이것도 마찬가지로 똑같이 코드로 구현하면 경사하강법을 이용한 오차가 가장 적은 곡선을 찾을 수 있습니다.
+### 3) 로지스틱 회귀 구현
+```python
+import numpy as np
+
+x_train = np.array([-50, -40, -30, -20, -10, -5, 0, 5, 10, 20, 30, 40, 50]) 
+y_train = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1]) 
+
+W = np.random.rand(1) 
+b = np.random.rand(1)
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x)) # 시그모이드 함수 구현
+
+epoch = 1000
+lr = 0.01
+delta = 1e-7
+
+y_pred = sigmoid(W*x_train+b)
+plt.scatter(x_train ,y_train)
+plt.plot(x_train[:],y_pred)
+plt.show()
+
+for i in range(epoch):
+    y_pred = sigmoid(W*x_train+b) # 일차직선에 시그모이드 함수를 적용한 예측 곡선
+    loss = -(1/len(y_train))*np.sum(y_train*np.log(y_pred+delta)+(1-y_train)*np.log(1-y_pred+delta)) # 이진 교차 엔트로피 오차(BCE) 측정
+    dW = (1/len(y_train))*np.sum((y_pred-y_train)*x_train) # loss를 W에 대해 편미분
+    db = (1/len(y_train))*np.sum((y_pred-y_train))         # loss를 b에 대해 편미분
+    W = W - lr*dW # W 업데이트
+    b = b - lr*db # b 업데이트
+    if i % 100 == 0:
+        print(f'Epoch: {i:5}/1000, loss: {loss:5f}, W : {W.item():.5f}, b : {b.item():.5f}')
+
+plt.scatter(x_train ,y_train)
+plt.plot(x_train[:],y_pred)
+plt.show()
+```
+![](/public/img/2023-12-10/Untitled%20(4).png){: width="30%" height="30%"}<br>
+(그림 26)<br>
+![](/public/img/2023-12-10/Untitled%20(5).png){: width="30%" height="30%"}<br>
+(그림 27)<br>
+위 코드처럼 선형회귀 방식과 비슷하게 구현하였습니다. 이진 교차 엔트로피(BCE) 활용하여 오차를 측정하고 정리한 식으로 W를 편미분, b를 편미분 이후 W, b를 계속 업데이트 하는 과정을 반복하였습니다. 그럼 (그림 26)처럼 맨 처음 랜덤으로 설정된 곡선이 (그림 27)의 곡선으로 오차가 가장 적은 곡선이 된 것을 볼 수 있습니다.<br><br>
+이제 로지스틱 회귀를 활용하여 OX를 분류하는 시나리오를 생각해봤습니다.<br><br>
+
+> 1 `|` OX 사진들을 0,1 사이로 전처리합니다. <br>
+> 2 `|` 전처리한 값들을 일자로 쭉 늘립니다. (32x32) -> (1, 1024) <br>
+> 3 `|` 로지스틱 회귀와 똑같이 LOSS를 정의하고, 각 차원의 W로 미분, b로 미분합니다. <br>이때 찾으려는 예측 함수는 `y=w1x1+w2x2+.....+w1024x1024+b` 와 같습니다.<br>
+> 4 `|` `W = W - 0.001*W`, `b = b - 0.001*b` 으로 W, b를 업데이트 합니다.<br>
+> 5 `|` 위 과정을 반복합니다.
+
+### 5) OX 분류 구현
+#### (1) 데이터셋 제작
+![](/public/img/2023-12-10/Untitled%20(6).png){: width="30%" height="30%"}<br>
+(그림 28)<br>
+![](/public/img/2023-12-10/Untitled%20(7).png){: width="30%" height="30%"}<br>
+(그림 29)<br>
+O 이미지 사진과 X 이미지 사진을 각각 30장씩 그려서 32x32 사이즈로 저장하였습니다.
+
+#### (2) 데이터셋 로드
+```python
+import cv2
+import numpy as np
+import os
+
+def chage_array(path):
+    img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+    otsu_threshold, image_result = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    th, dst = cv2.threshold(img, otsu_threshold, 255, cv2.THRESH_BINARY)
+    img = np.where(dst == 255, 0, 1)
+    return img
+
+O_data = np.array([chage_array('./O/'+path) for path in os.listdir('./O/')]) # O 이미지 데이터 로드 (chage_array함수로 이진화, 정규화)
+O_data = np.array([data.reshape(1,-1) for data in O_data])                   # (32x32) -> (1x1024) 형태로 변경
+O_data_label = np.ones(len(O_data))                                          # O 데이터 개수 만큼의 1로 채운 정답 데이터 생성
+
+X_data = np.array([chage_array('./X/'+path) for path in os.listdir('./X/')]) # X 이미지 데이터 로드 (chage_array함수로 이진화, 정규화)
+X_data = np.array([data.reshape(1,-1) for data in X_data])                   # (32x32) -> (1x1024) 형태로 변경
+X_data_label = np.zeros(len(X_data))                                         # X 데이터 개수 만큼의 0로 채운 정답 데이터 생성
+
+datas = np.append(O_data,X_data, axis=0)                                     # O_data, X_data 합치기
+labels = np.append(O_data_label, X_data_label)                               # O_data_label, X_data_label 합치기
+data = [[x,y] for x, y in zip(datas, labels)]                                # data, label 형태로 만들기
+data
+```
+```
+[[array([[0, 0, 0, ..., 0, 0, 0]]), 1.0],
+ [array([[0, 0, 0, ..., 0, 0, 0]]), 1.0],
+ ...
+ [array([[0, 0, 0, ..., 0, 0, 0]]), 0.0],
+ [array([[0, 0, 0, ..., 0, 0, 0]]), 0.0]]
+```
+O, X 이미지 데이터 로드 후 chage_array를 활용하여 이진화, 정규화 해주었습니다. 로드된 데이터를 (32x32) → (1, 1024)의 형태로 변경하였습니다.  O는 1로 채운 라벨을, X는 0으로 채운 라벨을 만들어 정답 데이터를 만들었습니다. 최종적으로 만든 데이터를 합쳐서 [data, label]의 형태로 만들어 주었습니다.
+
+#### (3) 데이터 섞기
+```python
+import random
+random.shuffle(data) # random 으로 데이터 섞기
+data
+```
+```
+[[array([[0, 0, 0, ..., 0, 0, 0]]), 1.0],
+ [array([[0, 0, 0, ..., 0, 0, 0]]), 1.0],
+  ...
+ [array([[0, 0, 0, ..., 0, 0, 0]]), 1.0],
+ [array([[0, 0, 0, ..., 0, 0, 0]]), 0.0]]
+```
+random 라이브러리를 사용하여 데이터를 섞어주었습니다.
+
+#### (4) X_train, y_train 지정
+```python
+x_train = np.array([n[0] for n in data]) # 학습 데이터 나누기
+y_train = np.array([n[1] for n in data]) # 정답 데이터 나누기
+x_train.shape, y_train.shape
+```
+```
+((60, 1, 1024), (60,))
+```
+아까 합친 데이터를 나누어 학습데이터, 정답데이터로 나누었습니다.
+
+#### (5) 경사하강법
+```python
+import numpy as np
+
+W = np.random.rand(1024,1) # 필요한 W 랜덤 설정
+b = np.random.rand(1)      # 필요한 b 랜덤 설정
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x)) # 시그모이드 함수 구현
+
+epoch = 2000 # 학습 횟수
+lr = 0.01    # learning rate 설정
+delta = 1e-7 # 오버플로우 방지
+
+for i in range(epoch):
+    y_pred = sigmoid(x_train@W+b)                                                                    # 예측 곡선
+    loss = -(1/len(y_train))*np.sum(y_train*np.log(y_pred+delta)+(1-y_train)*np.log(1-y_pred+delta)) # 이진 교차 엔트로피 (BCE) 구현
+    for i in range(len(x_train)):                                                                    
+        dW = (1/len(y_train))*np.sum(x_train[:,:,i] @ (y_pred-y_train))                              # 1024개의 W 미분
+        W = W - lr*dW                                                                                # 1024개의 W 업데이트
+    db = (1/len(y_train))*np.sum((y_pred-y_train))                                                   # b 미분
+    b = b - lr*db                                                                                    # b 업데이트
+    print(loss/len(y_train))
+```
+```
+7.7081558550911256
+7.678073101094921
+...
+3.5964124258812924
+3.5964124258812924
+```
+위에서의 로지스틱 회귀처럼 똑같이 구현하였습니다. 살짝 달라진게 있다면 위에서 로지스틱 회귀는 x가 하나였기 때문에 1차원, 즉 한번씩만 미분하면 되었지만 이번에는 1024차원이기 때문에 1024번을 계속 미분해 주어야 했습니다.
+
+#### (6) 가중치 저장 및 테스트
+```python
+np.save('./save/W.npy', W) # W 가중치 저장
+np.save('./save/b.npy', b) # b 가중치 저장
+```
+(그림 34)
+```python
+label = ['X', 'O']
+label[(sigmoid(test@W+b)[0][0] >= 0.5) * 1]
+```
+```
+'O'
+```
+(그림 35)<br>
+(그림 34)처럼 학습된 가중치들을 저장하고 (그림 35)와 같이 테스트 해보았을 때 테스트 그림은 O가 나오는 것을 알 수 있었습니다. 
+
+## 3. 느낀점
+그 동안 인공지능 해왔었지만 진짜 핵심적인 원리는 모르고 해왔던 것 같아 조금 창피했습니다. 경사하강법부터 시작해 로지스틱 회귀까지 쭉 진행하며 이론적인 부분은 거의 이해한 것 같았고, 라이브러리를 사용하여 진행한 인공지능 프로젝트 그 무엇보다 재미있었던 것 같았습니다. 이론적인 부분을 바탕으로 실제 구현되고 수학이 실제 공학에 어떻게 쓰이는지를 더 자세히 이해한 것 같아서 뿌듯했습니다. 다음에는 소프트맥스 회귀를 통해 다중분류를 하는 프로젝트도 도전해보고 싶습니다.
+
+## 4. 참고문헌
+- <https://medium.com/@andrewdaviesul/chain-rule-differentiation-log-loss-function-d79f223eae5>
+- <https://thebook.io/080324/>
+- <https://realblack0.github.io/2020/03/27/linear-regression.html>
+- <https://stickode.tistory.com/240>
+- <https://anweh.tistory.com/7>
+
+## 5. GitHub
+- <https://github.com/yc54616/OX-classification>

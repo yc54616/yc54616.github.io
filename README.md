@@ -3,31 +3,22 @@ layout: page
 title: About
 permalink: /about/
 ---
+> revised at 2023.12.03
 
-## Theme Monos
-> Simple and lightweight theme for Jekyll
+- `Name` : 유창하 (yc54616)
+- `Nation` : South Korea (Republic of Korea)
+- `Age` : 19 (2005.03.24 ~) 
+- `School` 
+  - Sunrin Internet High School - <https://sunrint.sen.hs.kr> (2021 ~)
+- `Team`
+    - Unifox - <https://unifox.kr> (2021 ~)
 
-### Features
-- Responsive.
-- Syntax Highlight
-- Most optimized theme for tech blog.
-- Lightweight with minimum stylesheet.
-- Easy to customize.
-- Offers category menu.
+## Achievement
+- 2022
+  - **1st**, The World Embedded Software Contest 2022 Junior(임베디드 소프트웨어 경진대회 주니어 부문) - `Team 배불뚝이` 
+  - **1st**, 
+Seoul Women's University Information Security Institute Information Security Contest(서울여자대학교 정보보호영재원 정보보안경진대회) - `Team 서울여대진학예정`
 
-### _config.yml
-> Code block will look like this.
-```yml
-highlighter-theme: monokai //you can change your syntax color scheme.
-date_format: "%Y-%M-%D" //and date format.
-```
-
-### Screenshots
-#### Page
-![alt text](/public/img/screenshot-1.png)
-#### Articles
-![alt text](/public/img/screenshot-2.png)
-#### Page - Mobile
-![alt text](/public/img/screenshot-m1.png)
-#### Page - Articles
-![alt text](/public/img/screenshot-m2.png)
+## Speaker / Paper
+- 2022 
+  - `한국시뮬레이션학회 추계학술대회` - Digital Twin 환경에서 영상 정보를 활용한 자율주행차 제어 방법 연구 
