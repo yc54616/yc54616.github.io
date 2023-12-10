@@ -8,10 +8,6 @@ category: PWN
 > Hello!
 
 This is code
-```python
-print('A'*0x80)
-
-```
 
 ```ruby
 print 'hello world'

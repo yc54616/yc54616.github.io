@@ -11,3 +11,9 @@ This is code
 ```ruby
 print 'hello world'
 ```
+
+{% highlight ruby mark_lines="1 2" %}
+def foo
+  puts 'foo'
+end
+{% endhighlight %}
