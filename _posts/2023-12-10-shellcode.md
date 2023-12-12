@@ -51,3 +51,9 @@ xor rsi, rsi	;set second arg
 xor rdx, rdx	;set third arg
 syscall
 ```
+
+## x86-64호출 규약: SYSV
+```
+RDI, RSI, RDX, RCX, R8, R9 => stack
+```
+
